@@ -10,8 +10,8 @@ const boostStatusEl = document.getElementById('boostStatus');
 let score = 0, time = 60, lives = 3, ended = false;
 
 const player = { x: 280, y: 300, w: 28, h: 28, vy: 0 };
-const gravity = 0.42; // Malo smanjena gravitacija za ugodniji let
-const jump = -12.5;   // Pojačan skok s -11 na -12.5 kako bi lakše dohvatio platforme
+const gravity = 0.42; 
+const jump = -12.5;   
 
 let left = false, right = false;
 let platforms = [];
@@ -21,18 +21,18 @@ let strawberries = [];
 let strawberryCount = 0;
 let isBoosting = false;
 let boostTimer = 0;
-let respawnProtection = 0; // Štit i pauza nakon gubitka života
+let respawnProtection = 0; 
 
 function makeLevel() {
   platforms = []; 
   strawberries = [];
   
-  // Prva platforma je UVIJEK točno ispod igrača na startu da ne propadne
+  // Prva platforma je odmah ispod igrača na startu
   platforms.push({ x: player.x - 30, y: player.y + player.h + 5, w: 90, h: 12 });
 
   // Generiranje ostalih platformi iznad prve
   for (let i = 1; i < 18; i++) {
-    const p = { x: Math.random() * 480 + 20, y: (player.y + 5) - i * 70, w: 90, h: 12 };
+    const p = { x: Math.random() * 480 + 20, y: (player.y + 5) - i * 72, w: 90, h: 12 };
     platforms.push(p);
     if (Math.random() < 0.35) {
       strawberries.push({ x: p.x + 30, y: p.y - 18 });
@@ -49,7 +49,7 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ' && strawberryCount >= 10 && !isBoosting && respawnProtection <= 0) {
     strawberryCount -= 10;
     isBoosting = true;
-    boostTimer = 180; 
+    boostTimer = 180; // 3 sekunde na 60 FPS
     updateBoostUI();
   }
 });
@@ -87,7 +87,7 @@ function loseLife() {
   player.y = 300;
   player.vy = 0;
   
-  // Aktivacija zaštite (90 okvira = 1.5 sekunda pauze/štita)
+  // Aktivacija zaštite na sekundu i pol
   respawnProtection = 90; 
 
   if (isBoosting) {
@@ -107,39 +107,41 @@ function update() {
   // Ako traje zaštita nakon stvaranja, odbrojavaj i smanji kretanje
   if (respawnProtection > 0) {
     respawnProtection--;
-    player.vy = 0; // Igrač lebdi na sigurnom prvu sekundu
+    player.vy = 0; 
     if (left) player.x -= 5;
     if (right) player.x += 5;
-    // Sprečavamo padanje platformi dok se igrač ne pokrene
     moveWorldUp(0); 
     return; 
   }
 
-  // Kretanje
+  // Kretanje lijevo - desno
   if (left) player.x -= 5;
   if (right) player.x += 5;
 
-  // Logika za Boost
+  // LOGIKA ZA BOOST 
   if (isBoosting) {
-    player.vy = -8;
+    player.vy = 0;      
+    player.y = 250;     // Igrač ostaje na fiksnoj visini dok svijet leti dolje
     boostTimer--;
-    moveWorldUp(8);
+    
+    moveWorldUp(12);    // Brzo guranje platformi prema dolje
     
     if (boostTimer <= 0) {
       isBoosting = false;
+      player.vy = jump; // Izlazni odraz prema gore nakon kraja boosta
       updateBoostUI();
     }
   } else {
+    // Standardna fizika
     player.vy += gravity;
+    player.y += player.vy;
   }
-  
-  player.y += player.vy;
 
-  // Granice ekrana
+  // Granice ekrana s lijeve i desne strane
   if (player.x < 0) player.x = 0;
   if (player.x > canvas.width - player.w) player.x = canvas.width - player.w;
 
-  // Sudar s platformama
+  // Sudar s platformama (samo ako nismo u boostu)
   if (!isBoosting) {
     for (const p of platforms) {
       if (player.vy > 0 &&
@@ -169,21 +171,22 @@ function update() {
     return true;
   });
 
-  // Standardno guranje kamere kada igrač ide sam prema vrhu
+  // Standardno guranje kamere kada igrač ide sam prema vrhu skakanjem
   if (player.y < 250 && !isBoosting) {
     const diff = 250 - player.y;
     player.y = 250;
     moveWorldUp(diff);
   }
 
-  // --- AUTOMATSKO PADANJE PLATFORMI (PROGRESIVNO) ---
+  // --- AUTOMATSKO PADANJE PLATFORMI (PROGRESIVNO SA STABILNOM GRANICOM) ---
   if (!isBoosting) {
-    // Početna brzina je 0.6, a svakih 2000 bodova se povećava za 0.5 brzine
-    let autoScrollSpeed = 0.6 + (score / 4000); 
-    autoScrollSpeed = Math.min(autoScrollSpeed, 4.5); // Maksimalna brzina da ne bude nemoguće
+    // Početna brzina je 0.6. Brzina raste lagano s bodovima, ali maksimalno do 3.5.
+    // Koristimo Math.min() kako igra nikada ne bi prešla granicu ljudskih refleksa.
+    let autoScrollSpeed = 0.6 + (score / 6000); 
+    autoScrollSpeed = Math.min(autoScrollSpeed, 3.5); // 3.5 je idealan balans za brzu, ali igrivu akciju
     
     moveWorldUp(autoScrollSpeed);
-    player.y += autoScrollSpeed; // Igrač se prividno spušta jer sve bježi dolje
+    player.y += autoScrollSpeed; 
   }
 
   // Smrt ako ispadne s dna ekrana
@@ -201,13 +204,12 @@ function moveWorldUp(amount) {
   platforms.forEach(p => p.y += amount);
   strawberries.forEach(s => s.y += amount);
 
-  score += Math.floor(amount * 0.1); // Manje bodova za automatsko skrolanje da balansira igru
+  score += Math.floor(amount * 0.1); 
 
   platforms = platforms.filter(p => p.y < 650);
 
   while (platforms.length < 18) {
     const top = platforms.length > 0 ? Math.min(...platforms.map(p => p.y)) : 0;
-    // Razmak između katova je postavljen na stabilnih 70-75 piksela kako ne bi bilo rupa
     const p = { x: Math.random() * 480 + 20, y: top - 72, w: 90, h: 12 };
     platforms.push(p);
 
@@ -230,22 +232,22 @@ function draw() {
   ctx.font = '20px Arial';
   strawberries.forEach(s => ctx.fillText('🍓', s.x, s.y));
 
+  // Plavi okvir oko ekrana za vrijeme Boosta
+  if (isBoosting) {
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  }
+
   // Crtanje igrača
   ctx.font = '28px Arial';
   
-  // Efekt bljeskanja ako je igrač pod zaštitom (nakon respawna)
   if (respawnProtection > 0 && Math.floor(respawnProtection / 5) % 2 === 0) {
-    // Preskačemo crtanje u ovom okviru da dobijemo efekt bljeskanja prozirnosti
     ctx.globalAlpha = 0.5;
   }
 
-  if (isBoosting) {
-    ctx.fillText('🚀', player.x, player.y + 24);
-  } else {
-    ctx.fillText('🧑', player.x, player.y + 24);
-  }
-  
-  ctx.globalAlpha = 1.0; // Reset prozirnosti
+  ctx.fillText('🧑', player.x, player.y + 24);
+  ctx.globalAlpha = 1.0; 
 }
 
 function loop() {
