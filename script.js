@@ -1,6 +1,5 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-
 const scoreEl = document.getElementById('score');
 const timeEl = document.getElementById('time');
 const livesEl = document.getElementById('lives');
@@ -11,8 +10,8 @@ const boostStatusEl = document.getElementById('boostStatus');
 let score = 0, time = 60, lives = 3, ended = false;
 
 const player = { x: 280, y: 750, w: 28, h: 28, vy: 0 };
-const gravity = 0.42; 
-const jump = -12.5;   
+const gravity = 0.28; // Manja gravitacija = sporije padanje i duži let
+const jump = -10.0;   // Manji skok = sporije i niže uzlijetanje  
 
 let left = false, right = false;
 let platforms = [];
@@ -359,4 +358,17 @@ function draw() {
   ctx.globalAlpha = 1.0; 
 }
 
-function loop() {
+function loop() {update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+setInterval(() => {
+  if (ended) return;
+  time--;
+  timeEl.textContent = time;
+  if (time <= 0) loseLife();
+  }, 1000);
+  loop();
+
