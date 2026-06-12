@@ -10,7 +10,7 @@ const boostStatusEl = document.getElementById('boostStatus');
 let score = 0, time = 60, lives = 3, ended = false;
 
 const player = { x: 280, y: 750, w: 28, h: 28, vy: 0 };
-const gravity = 0.28; // Manja gravitacija = sporije padanje i duži let
+const gravity = 0.20; // Manja gravitacija = sporije padanje i duži let
 const jump = -10.0;   // Manji skok = sporije i niže uzlijetanje  
 
 let left = false, right = false;
