@@ -1,9 +1,29 @@
 body{
 margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif;
-display:flex;flex-direction:column;align-items:center}
+display:flex;flex-direction:column;align-items:center;position:relative}
+
 .hud{width:600px;display:flex;justify-content:space-between;padding:10px;font-size:22px;box-sizing:border-box}
+
 canvas{background:#1e293b;border:2px solid white}
-.hidden{display:none}
-#gameOver{text-align:center;margin-top:15px}
-button{padding:10px 20px;font-size:16px;border:none;border-radius:8px;cursor:pointer;background:#60a5fa;color:white;font-weight:bold}
+
+.hidden{display:none !important}
+
+/* Pozicioniranje Game Over ekrana točno na sredinu ekrana */
+#gameOver{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%, -50%);
+background:rgba(15, 23, 42, 0.95); /* Poluprozirna tamna pozadina */
+border:3px solid #60a5fa;
+padding:30px 50px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,0.5);
+z-index:10;
+width:250px}
+
+#gameOver h2{margin-top:0;font-size:28px;color:#ef4444}
+
+button{padding:10px 20px;font-size:16px;border:none;border-radius:8px;cursor:pointer;background:#60a5fa;color:white;font-weight:bold;width:100%}
 button:hover{background:#3b82f6}
