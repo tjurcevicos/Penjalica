@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penjalica</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="hud">
+<div id="lives">❤️❤️❤️</div>
+<div>⏱️ <span id="time">60</span></div>
+<div>🏆 <span id="score">0</span></div>
+</div>
+
+<canvas id="game" width="420" height="600"></canvas>
+
+<div id="gameOver" class="hidden">
+<h2>💀 Game Over</h2>
+<button onclick="location.reload()">Nova igra</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
